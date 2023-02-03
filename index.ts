@@ -1,0 +1,1 @@
+export { remarkEleventyImage } from "./src/astro-remark-images";

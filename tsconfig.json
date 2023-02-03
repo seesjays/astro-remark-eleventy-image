@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "lib": ["ESNext"],
+    "esModuleInterop": true,
+    "allowJs": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "skipLibCheck": true,
+    "strict": true
+  },
+  "include": ["index.ts", "src"]
+}
