@@ -6,7 +6,9 @@ This drop-in remark plugin replicates that functionality by using [Eleventy Imag
 
 ## Installation
 
-`npm install astro-remark-eleventy-image`
+```shell
+npm install astro-remark-eleventy-image
+```
 
 ## Usage
 
@@ -22,7 +24,7 @@ export default defineConfig({
     markdown: {
         remarkPlugins: [remarkEleventyImage]
     }
-    });
+});
 ```
 
 Make sure to import the plugin and add it to your markdown.remarkPlugins array, similar to what they show in the [Astro docs for Markdown.](https://docs.astro.build/en/guides/markdown-content/#markdown-plugins)
@@ -37,18 +39,18 @@ import { remarkEleventyImage } from "astro-remark-eleventy-image";
 
 // https://astro.build/config
 export default defineConfig({
-    markdown: {
-        remarkPlugins: [remarkEleventyImage],
-        remarkImages: {
-            sizes: "(max-width: 700px) 100vw, 700px",
-            eleventyImageConfig: {
-                widths: ["auto", 600, 1000, 1400],
-                sharpOptions: {
-                    animated: false,
-                },
-            },
+  markdown: {
+    remarkPlugins: [remarkEleventyImage],
+    remarkImages: {
+      sizes: "(max-width: 700px) 100vw, 700px",
+      eleventyImageConfig: {
+        widths: ["auto", 600, 1000, 1400],
+        sharpOptions: {
+          animated: false,
         },
+      },
     },
+  },
 });
 ```
 
