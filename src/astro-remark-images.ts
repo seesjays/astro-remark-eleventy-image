@@ -19,13 +19,12 @@ function remarkEleventyImage()
     const publicDir = config.publicDir || "./public/";
     const outDir = config.outDir || "./dist/";
 
-    const ricfg = config.markdown.remarkImages ? config.markdown.remarkImages : null;
-    const ricfgContainerSizes = ricfg.sizes ? ricfg.sizes : "(max-width: 700px) 100vw, 700px";
-    const ricfgEleventyImageConfig: Image.ImageOptions = ricfg.eleventyImageConfig ? ricfg.eleventyImageConfig : null;
+    const ricfg = (config?.markdown?.remarkImages) ? config.markdown.remarkImages : null;
+    const ricfgContainerSizes = (ricfg?.sizes) ? ricfg.sizes : "(max-width: 700px) 100vw, 700px";
+    const ricfgEleventyImageConfig: Image.ImageOptions = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
 
     // setup eleventy image config obj, overwrite with settings from astro.config.mjs
     const baseEleventyConfig: Image.ImageOptions = Object.assign({
-        widths: ['auto', 600, 1000],
         sharpOptions: {
             animated: true
         },
@@ -40,8 +39,8 @@ function remarkEleventyImage()
         Also, the user isn't allowed to change the filename or outputdir. Sorry!
     */
 
-    // this is so typescript stops crying
-    if (!baseEleventyConfig.widths) baseEleventyConfig.widths = ['auto'];
+    // this is so we have some nice default sizes, and so typescript can stop crying
+    if (!baseEleventyConfig.widths) baseEleventyConfig.widths = ['auto', 600, 1000];
     if (!baseEleventyConfig.widths.includes('auto') && !baseEleventyConfig.widths.includes(null))
     {
         // user overwrote sizes but doesn't have 'auto'
