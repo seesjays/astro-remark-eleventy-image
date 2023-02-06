@@ -64,13 +64,6 @@ function remarkEleventyImage()
             const visitor = (node: any) =>
             {
                 /*
-                    Don't mess with external images.
-                    There's probably a more elegant method to detect these
-                    that I can't recall at the time.
-                */
-                if (node.url.indexOf("http") == 0) return;
-
-                /*
                     Use alt text. Accessibility is good! :)
                 */
                 if (!node.alt)
@@ -89,12 +82,27 @@ function remarkEleventyImage()
             {
                 let originalImagePath;
                 let outputImageDir;
+                let outputImageDirHTML;
 
                 try
                 {
                     console.log(`(astro-remark-images) Optimizing image: ${path.basename(node.url)} referenced in file: ${path.basename(file.path)}`);
-                    originalImagePath = path.join(publicDir, node.url);
-                    outputImageDir = path.dirname(path.join(outDir, node.url));
+                    if (node.url.indexOf("http") == 0) 
+                    {
+                        // Remote image. In this case the optimized images are put
+                        // in a subdirectory of '/arei-optimg/' based on the markdown file name.
+                        originalImagePath = node.url;
+                        outputImageDir = path.join(outDir, '/arei-optimg/');
+                        outputImageDirHTML = path.join('/arei-optimg/');
+                    }
+                    else
+                    {
+                        // Local Image. In this case the optimized images are put
+                        // where the original image would be in the final build
+                        originalImagePath = path.join(publicDir, node.url);
+                        outputImageDir = path.dirname(path.join(outDir, node.url));
+                        outputImageDirHTML = path.dirname(node.url);
+                    }
 
                     // the directory the image should be in
                     // and the filename changes with each image
@@ -108,7 +116,7 @@ function remarkEleventyImage()
 
                     const responsiveHTML = createPicture(
                         {
-                            imageDir: path.dirname(node.url),
+                            imageDir: outputImageDirHTML,
                             metadata: stats as {
                                 jpeg?: ImageMetadata[],
                                 webp?: ImageMetadata[],
