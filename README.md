@@ -58,10 +58,32 @@ export default defineConfig({
 
 `sizes` is the `sizes` attribute that gets passed to the HTML. If you don’t know how to set this, you can [read up on how it works on MDN.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/sizes)
 
-`eleventyImageConfig` is the configuration object that gets passed to [Eleventy Image.](https://www.11ty.dev/docs/plugins/image/).You can use it to configure the underlying `sharp` settings, the widths the plugin generates (more widths, more processing time), and more.
+`eleventyImageConfig` is the configuration object that gets passed to [Eleventy Image.](https://www.11ty.dev/docs/plugins/image/) You can use it to configure the underlying `sharp` settings, the widths the plugin generates (more widths, more processing time), and more.
 
 > You cannot, however, configure where images are output and what they’re named. The names for the optimized images are generated based on what the original images are named, and the optimized images are placed in the same output directories as the original images.
 > This is all to make sure the images are properly linked to in the generated HTML
+
+### Default Values
+
+When you don’t configure the plugin, these are the default values that get subbed in. I wanted to make them sensible and widely-applicable.
+
+```js
+export default defineConfig({
+  markdown: {
+    remarkPlugins: [remarkEleventyImage],
+    remarkImages: {
+      sizes: "(max-width: 700px) 100vw, 700px",
+      eleventyImageConfig: {
+        widths: ["auto", 600, 1000],
+        sharpOptions: {
+          animated: true,
+        },
+        useCache: false,
+      },
+    },
+  },
+});
+```
 
 ## Why should you use this plugin?
 
