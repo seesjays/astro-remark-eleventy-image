@@ -24,9 +24,9 @@ function remarkEleventyImage()
     const ricfgRemoteEnabled = (ricfg?.remoteImages) ? ricfg.remoteImages : false;
     const ricfgEleventyImageConfig: Image.ImageOptions = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
 
-
     // setup eleventy image config obj, overwrite with settings from astro.config.mjs
     const baseEleventyConfig: Image.ImageOptions = Object.assign({
+        widths: ['auto', 600, 1000],
         sharpOptions: {
             animated: true
         },
@@ -40,10 +40,7 @@ function remarkEleventyImage()
         since Eleventy doesn't upscale rasters.
         Also, the user isn't allowed to change the filename or outputdir. Sorry!
     */
-
-    // this is so we have some nice default sizes, and so typescript can stop crying
-    if (!baseEleventyConfig.widths) baseEleventyConfig.widths = ['auto', 600, 1000];
-    if (!baseEleventyConfig.widths.includes('auto') && !baseEleventyConfig.widths.includes(null))
+    if (baseEleventyConfig.widths && !baseEleventyConfig.widths.includes('auto') && !baseEleventyConfig.widths.includes(null))
     {
         // user overwrote sizes but doesn't have 'auto'
         // in there for the optimized original size
@@ -66,10 +63,11 @@ function remarkEleventyImage()
             const visitor = (node: any) =>
             {
                 /*
-                    Remote images are off by default; this is to prevent any stability issues
-                    and unnecessary errors.
+                    Remote images are off by default. 
+                    This is to prevent any stability issues, unnecessary errors, and longer processing times.
+                    I'll add a portion in the README about turning it on
                 */
-                if (!ricfg.remoteImages && Image.Util.isRemoteUrl(node.url))
+                if (!ricfgRemoteEnabled && Image.Util.isRemoteUrl(node.url))
                 {
                     return;
                 }
@@ -94,17 +92,26 @@ function remarkEleventyImage()
                 let originalImagePath;
                 let outputImageDir;
                 let outputImageDirHTML;
+                const currentConfig: Image.ImageOptions = {};
 
                 try
                 {
                     console.log(`(astro-remark-images) Optimizing image: ${path.basename(node.url)} referenced in file: ${path.basename(file.path)}`);
-                    if (node.url.indexOf("http") == 0) 
+                    if (Image.Util.isRemoteUrl(node.url)) 
                     {
                         // Remote image. In this case the optimized images are put
                         // in a subdirectory of '/arei-optimg/' based on the markdown file name.
                         originalImagePath = node.url;
                         outputImageDir = path.join(outDir, '/arei-optimg/');
                         outputImageDirHTML = path.join('/arei-optimg/');
+
+                        // this is so the plugin doesn't crash when trying to optimize remote images
+                        // ([Error: VipsJpeg: Maximum supported image dimension is 65500 pixels])
+                        currentConfig.formats = ['auto'];
+                        currentConfig.filenameFormat = (id, src, width, format) =>
+                        {
+                            return `${id}-${width}.${format}`;
+                        };
                     }
                     else
                     {
@@ -113,25 +120,21 @@ function remarkEleventyImage()
                         originalImagePath = path.join(publicDir, node.url);
                         outputImageDir = path.dirname(path.join(outDir, node.url));
                         outputImageDirHTML = path.dirname(node.url);
+
+                        currentConfig.filenameFormat = (id, src, width, format) =>
+                        {
+                            return `${path.parse(node.url).name}-${width}.${format}`;
+                        };
                     }
 
                     // the directory the image should be in
-                    // and the filename changes with each image
-                    baseEleventyConfig.outputDir = outputImageDir;
-                    baseEleventyConfig.filenameFormat = (id, src, width, format) =>
-                    {
-                        return `${path.parse(node.url).name}-${width}.${format}`;
-                    };
+                    currentConfig.outputDir = outputImageDir;
 
-                    const stats = await Image(originalImagePath, baseEleventyConfig);
-
+                    const stats: Image.Metadata = await Image(originalImagePath, Object.assign(currentConfig, baseEleventyConfig));
                     const responsiveHTML = createPicture(
                         {
                             imageDir: outputImageDirHTML,
-                            metadata: stats as {
-                                jpeg?: ImageMetadata[],
-                                webp?: ImageMetadata[],
-                            },
+                            metadata: stats,
                             alt: node.alt,
                             sizes: ricfgContainerSizes
                         }
@@ -156,37 +159,32 @@ function remarkEleventyImage()
 
 export { remarkEleventyImage };
 
-type ImageMetadata = {
-    format: string,
-    width: number,
-    height: number,
-    url: string,
-    sourceType: string,
-    srcset: string,
-    filename: string,
-    outputPath: string,
-    size: number,
-};
-
 interface createPictureProps
 {
     imageDir: string,
-    metadata: {
-        jpeg?: ImageMetadata[],
-        webp?: ImageMetadata[],
-    };
+    metadata: Image.Metadata,
     alt: string,
     sizes: string,
 }
-
 function createPicture({ imageDir, metadata, alt, sizes }: createPictureProps)
 {
-    if (!metadata.jpeg || metadata.jpeg?.length == 0) return;
-    let highsrc = metadata.jpeg[metadata.jpeg.length - 1];
+    let baseSource: Image.MetadataEntry[];
+    let highsrc: Image.MetadataEntry;
 
-    function correctSrcset(entry: ImageMetadata)
+    if (metadata.jpeg && metadata.jpeg.length > 0)
     {
-        const filename = path.join(imageDir, entry.filename) + ` ${entry.width}w`;
+        baseSource = metadata.jpeg;
+        highsrc = metadata.jpeg[metadata.jpeg.length - 1];
+    }
+    else
+    {
+        baseSource = Object.values(metadata)[0] as Image.MetadataEntry[];
+        highsrc = baseSource[baseSource.length - 1];
+    }
+
+    function correctSrcset(entry: Image.MetadataEntry)
+    {
+        const filename = path.join(imageDir, path.basename(entry.url)) + ` ${entry.width}w`;
         return filename;
     }
 
@@ -197,7 +195,7 @@ function createPicture({ imageDir, metadata, alt, sizes }: createPictureProps)
         return `    <source type="${imageFormat[0].sourceType}" srcset="${imageFormat.map(entry => correctSrcset(entry)).join(", ")}" sizes="${sizes}">\n`;
     }).join("\n")}
       <img
-        src="${path.join(imageDir, highsrc.filename)}"
+        src="${path.join(imageDir, path.basename(highsrc.url))}"
         width="${highsrc.width}"
         height="${highsrc.height}"
         alt="${alt}"
