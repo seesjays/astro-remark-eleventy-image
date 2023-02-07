@@ -21,7 +21,9 @@ function remarkEleventyImage()
 
     const ricfg = (config?.markdown?.remarkImages) ? config.markdown.remarkImages : null;
     const ricfgContainerSizes = (ricfg?.sizes) ? ricfg.sizes : "(max-width: 700px) 100vw, 700px";
+    const ricfgRemoteEnabled = (ricfg?.remoteImages) ? ricfg.remoteImages : false;
     const ricfgEleventyImageConfig: Image.ImageOptions = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
+
 
     // setup eleventy image config obj, overwrite with settings from astro.config.mjs
     const baseEleventyConfig: Image.ImageOptions = Object.assign({
@@ -63,6 +65,15 @@ function remarkEleventyImage()
 
             const visitor = (node: any) =>
             {
+                /*
+                    Remote images are off by default; this is to prevent any stability issues
+                    and unnecessary errors.
+                */
+                if (!ricfg.remoteImages && Image.Util.isRemoteUrl(node.url))
+                {
+                    return;
+                }
+
                 /*
                     Use alt text. Accessibility is good! :)
                 */
