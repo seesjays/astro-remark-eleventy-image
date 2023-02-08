@@ -75,6 +75,7 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkEleventyImage],
     remarkImages: {
+      remoteImages: false,
       sizes: "(max-width: 700px) 100vw, 700px",
       eleventyImageConfig: {
         widths: ["auto", 600, 1000],
