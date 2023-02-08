@@ -4,6 +4,8 @@ import Image from "@11ty/eleventy-img";
 
 // @ts-ignore
 import config from "./astro.config.mjs";
+import { createHTML } from "./markupUtil.js";
+import { MarkupValues } from "./types.js";
 
 /*
     ONlY do this work in prod; don't want to mess up the dev build in any way
@@ -14,15 +16,22 @@ import config from "./astro.config.mjs";
     4. Automagically optimized images!
 */
 
+type RemarkImagesConfig = {
+    sizes?: string,
+    remoteImages?: boolean,
+    eleventyImageConfig?: Image.ImageOptions,
+    customMarkup?: ((attributes: MarkupValues) => string),
+};
 function remarkEleventyImage()
 {
     const publicDir = config.publicDir || "./public/";
     const outDir = config.outDir || "./dist/";
 
-    const ricfg = (config?.markdown?.remarkImages) ? config.markdown.remarkImages : null;
+    const ricfg: RemarkImagesConfig = (config?.markdown?.remarkImages) ? config.markdown.remarkImages : null;
     const ricfgContainerSizes = (ricfg?.sizes) ? ricfg.sizes : "(max-width: 700px) 100vw, 700px";
     const ricfgRemoteEnabled = (ricfg?.remoteImages) ? ricfg.remoteImages : false;
-    const ricfgEleventyImageConfig: Image.ImageOptions = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
+    const ricfgCustomMarkup = (ricfg?.customMarkup) ? ricfg.customMarkup : null;
+    const ricfgEleventyImageConfig = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
 
     // setup eleventy image config obj, overwrite with settings from astro.config.mjs
     const baseEleventyConfig: Image.ImageOptions = Object.assign({
@@ -97,6 +106,7 @@ function remarkEleventyImage()
                 try
                 {
                     console.log(`(astro-remark-images) Optimizing image: ${path.basename(node.url)} referenced in file: ${path.basename(file.path)}`);
+
                     if (Image.Util.isRemoteUrl(node.url)) 
                     {
                         // Remote image. In this case the optimized images are put
@@ -131,14 +141,15 @@ function remarkEleventyImage()
                     currentConfig.outputDir = outputImageDir;
 
                     const stats: Image.Metadata = await Image(originalImagePath, Object.assign(currentConfig, baseEleventyConfig));
-                    const responsiveHTML = createPicture(
-                        {
-                            imageDir: outputImageDirHTML,
-                            metadata: stats,
-                            alt: node.alt,
-                            sizes: ricfgContainerSizes
-                        }
-                    );
+                    const responsiveHTML = createHTML({
+                        imageDir: outputImageDirHTML,
+                        metadata: stats,
+                        alt: node.alt,
+                        sizes: ricfgContainerSizes,
+                        isRemote: Image.Util.isRemoteUrl(node.url),
+                        mdFilePath: file.path,
+                        customMarkup: ricfgCustomMarkup,
+                    });
 
                     if (responsiveHTML)
                     {
@@ -158,48 +169,3 @@ function remarkEleventyImage()
 };
 
 export { remarkEleventyImage };
-
-interface createPictureProps
-{
-    imageDir: string,
-    metadata: Image.Metadata,
-    alt: string,
-    sizes: string,
-}
-function createPicture({ imageDir, metadata, alt, sizes }: createPictureProps)
-{
-    let baseSource: Image.MetadataEntry[];
-    let highsrc: Image.MetadataEntry;
-
-    if (metadata.jpeg && metadata.jpeg.length > 0)
-    {
-        baseSource = metadata.jpeg;
-        highsrc = metadata.jpeg[metadata.jpeg.length - 1];
-    }
-    else
-    {
-        baseSource = Object.values(metadata)[0] as Image.MetadataEntry[];
-        highsrc = baseSource[baseSource.length - 1];
-    }
-
-    function correctSrcset(entry: Image.MetadataEntry)
-    {
-        const filename = path.join(imageDir, path.basename(entry.url)) + ` ${entry.width}w`;
-        return filename;
-    }
-
-    return `
-    <picture>
-    ${Object.values(metadata).map(imageFormat =>
-    {
-        return `    <source type="${imageFormat[0].sourceType}" srcset="${imageFormat.map(entry => correctSrcset(entry)).join(", ")}" sizes="${sizes}">\n`;
-    }).join("\n")}
-      <img
-        src="${path.join(imageDir, path.basename(highsrc.url))}"
-        width="${highsrc.width}"
-        height="${highsrc.height}"
-        alt="${alt}"
-        loading="lazy"
-        decoding="async">
-    </picture>`;
-}
