@@ -42,6 +42,7 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkEleventyImage],
     remarkImages: {
+      remoteImages: false,
       sizes: "(max-width: 700px) 100vw, 700px",
       eleventyImageConfig: {
         widths: ["auto", 600, 1000, 1400],
@@ -56,6 +57,8 @@ export default defineConfig({
 
 `remarkImages` contains the configuration for the plugin.
 
+`remoteImages` controls whether or not remote images (the kind hosted on other websites like GitHub) are optimized on your site. This is mostly stable, but if problems arise please submit an issue.
+
 `sizes` is the `sizes` attribute that gets passed to the HTML. If you don’t know how to set this, you can [read up on how it works on MDN.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/sizes)
 
 `eleventyImageConfig` is the configuration object that gets passed to [Eleventy Image.](https://www.11ty.dev/docs/plugins/image/) You can use it to configure the underlying `sharp` settings, the widths the plugin generates (more widths, more processing time), and more.
@@ -63,7 +66,7 @@ export default defineConfig({
 > You cannot, however, configure where images are output and what they’re named. The names for the optimized images are generated based on what the original images are named, and the optimized images are placed in the same output directories as the original images.
 > This is all to make sure the images are properly linked to in the generated HTML
 
-### Default Values
+#### Default Values
 
 When you don’t configure the plugin, these are the default values that get subbed in. I wanted to make them sensible and widely-applicable.
 
@@ -84,6 +87,42 @@ export default defineConfig({
   },
 });
 ```
+
+#### Custom Markup
+
+See [PR #4](https://github.com/ChrisOh431/astro-remark-eleventy-image/pull/4) for detailed information on how to write custom markup.
+
+`astro-config-mjs`
+
+```ts
+import { defineConfig } from 'astro/config';
+import { remarkEleventyImage } from "astro-remark-eleventy-image";
+
+function customMarkup({ src, width, height, alt, format, sources, isRemote, mdFilePath }) {
+    return `
+        <picture>
+        ${sources}
+        <img
+            src="${src}"
+            width="${width}"
+            height="${height}"
+            alt="${alt}"
+            loading="lazy"
+            decoding="async">
+    </picture>`;
+}
+
+// https://astro.build/config
+export default defineConfig({
+  markdown: {
+    remarkPlugins: [remarkEleventyImage],
+    remarkImages: {
+      customMarkup: customMarkup
+    }
+  }
+});
+```
+
 
 ## Why should you use this plugin?
 
