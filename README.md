@@ -50,6 +50,7 @@ export default defineConfig({
           animated: false,
         },
       },
+      altText: true,
     },
   },
 });

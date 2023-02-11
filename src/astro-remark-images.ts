@@ -21,6 +21,7 @@ type RemarkImagesConfig = {
     remoteImages?: boolean,
     eleventyImageConfig?: Image.ImageOptions,
     customMarkup?: ((attributes: MarkupValues) => string),
+    altText?: boolean,
 };
 function remarkEleventyImage()
 {
@@ -32,6 +33,7 @@ function remarkEleventyImage()
     const ricfgRemoteEnabled = (ricfg?.remoteImages) ? ricfg.remoteImages : false;
     const ricfgCustomMarkup = (ricfg?.customMarkup) ? ricfg.customMarkup : null;
     const ricfgEleventyImageConfig = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
+    const ricfgAltText = (ricfg?.altText !== undefined) ? ricfg.altText : true;
 
     // setup eleventy image config obj, overwrite with settings from astro.config.mjs
     const baseEleventyConfig: Image.ImageOptions = Object.assign({
@@ -84,7 +86,7 @@ function remarkEleventyImage()
                 /*
                     Use alt text. Accessibility is good! :)
                 */
-                if (!node.alt)
+                if (ricfgAltText && !node.alt)
                 {
                     console.warn(`(astro-remark-images) Skipped image: ${node.url} in file ${path.basename(file.path)} due to missing alt text, which eleventy-image necessitates.`);
                     return;
