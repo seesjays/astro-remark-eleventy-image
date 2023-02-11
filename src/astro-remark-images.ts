@@ -2,10 +2,30 @@ import path from "path";
 import { visit } from "unist-util-visit";
 import Image from "@11ty/eleventy-img";
 
-// @ts-ignore
-import config from "./astro.config.mjs";
 import { createHTML } from "./markupUtil.js";
 import { MarkupValues } from "./types.js";
+import fs from "fs";
+import type { AstroUserConfig } from "astro";
+
+let configFile = "astro.config.mjs";
+const paths = [
+  "astro.config.mjs",
+  "astro.config.js",
+  "astro.config.ts",
+  "astro.config.mts",
+  "astro.config.cjs",
+  "astro.config.cts",
+].map((p) => path.join(process.cwd(), p));
+
+for (const file of paths) {
+  if (fs.existsSync(file)) {
+    configFile = file;
+  }
+}
+
+const config = JSON.stringify(
+  fs.readFileSync(configFile, "utf-8")
+) as AstroUserConfig;
 
 /*
     ONlY do this work in prod; don't want to mess up the dev build in any way
@@ -22,12 +42,10 @@ type RemarkImagesConfig = {
     eleventyImageConfig?: Image.ImageOptions,
     customMarkup?: ((attributes: MarkupValues) => string),
 };
-function remarkEleventyImage()
-{
+const remarkEleventyImage = (ricfg: RemarkImagesConfig) => {
     const publicDir = config.publicDir || "./public/";
     const outDir = config.outDir || "./dist/";
 
-    const ricfg: RemarkImagesConfig = (config?.markdown?.remarkImages) ? config.markdown.remarkImages : null;
     const ricfgContainerSizes = (ricfg?.sizes) ? ricfg.sizes : "(max-width: 700px) 100vw, 700px";
     const ricfgRemoteEnabled = (ricfg?.remoteImages) ? ricfg.remoteImages : false;
     const ricfgCustomMarkup = (ricfg?.customMarkup) ? ricfg.customMarkup : null;

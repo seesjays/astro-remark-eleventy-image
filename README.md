@@ -40,17 +40,21 @@ import { remarkEleventyImage } from "astro-remark-eleventy-image";
 // https://astro.build/config
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkEleventyImage],
-    remarkImages: {
-      remoteImages: false,
-      sizes: "(max-width: 700px) 100vw, 700px",
-      eleventyImageConfig: {
-        widths: ["auto", 600, 1000, 1400],
-        sharpOptions: {
-          animated: false,
+    remarkPlugins: [
+      [
+        remarkEleventyImage,
+        {
+          remoteImages: false,
+          sizes: "(max-width: 700px) 100vw, 700px",
+          eleventyImageConfig: {
+            widths: ["auto", 600, 1000, 1400],
+            sharpOptions: {
+              animated: false,
+            },
+          },
         },
-      },
-    },
+      ]
+    ],
   },
 });
 ```
@@ -73,18 +77,22 @@ When you don’t configure the plugin, these are the default values that get sub
 ```js
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkEleventyImage],
-    remarkImages: {
-      remoteImages: false,
-      sizes: "(max-width: 700px) 100vw, 700px",
-      eleventyImageConfig: {
-        widths: ["auto", 600, 1000],
-        sharpOptions: {
-          animated: true,
-        },
-        useCache: false,
-      },
-    },
+    remarkPlugins: [
+      [
+        remarkEleventyImage, 
+        {
+          remoteImages: false,
+          sizes: "(max-width: 700px) 100vw, 700px",
+          eleventyImageConfig: {
+            widths: ["auto", 600, 1000],
+            sharpOptions: {
+              animated: true,
+            },
+            useCache: false,
+          },
+        }
+      ]
+    ],
   },
 });
 ```
@@ -116,10 +124,14 @@ function customMarkup({ src, width, height, alt, format, sources, isRemote, mdFi
 // https://astro.build/config
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkEleventyImage],
-    remarkImages: {
-      customMarkup: customMarkup
-    }
+    remarkPlugins: [
+      [
+        remarkEleventyImage,
+        {
+          customMarkup: customMarkup
+        }
+      ]
+    ],
   }
 });
 ```
