@@ -101,7 +101,11 @@ function remarkEleventyImage()
                 let originalImagePath;
                 let outputImageDir;
                 let outputImageDirHTML;
-                const currentConfig: Image.ImageOptions = {};
+                const currentConfig: Image.ImageOptions = {
+                    // this is so the plugin doesn't crash when trying to optimize remote images
+                    // ([Error: VipsJpeg: Maximum supported image dimension is 65500 pixels])
+                    formats: ['auto']
+                };
 
                 try
                 {
@@ -115,9 +119,6 @@ function remarkEleventyImage()
                         outputImageDir = path.join(outDir, '/arei-optimg/');
                         outputImageDirHTML = path.join('/arei-optimg/');
 
-                        // this is so the plugin doesn't crash when trying to optimize remote images
-                        // ([Error: VipsJpeg: Maximum supported image dimension is 65500 pixels])
-                        currentConfig.formats = ['auto'];
                         currentConfig.filenameFormat = (id, src, width, format) =>
                         {
                             return `${id}-${width}.${format}`;
