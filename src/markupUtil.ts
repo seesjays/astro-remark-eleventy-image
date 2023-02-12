@@ -2,21 +2,6 @@ import { MarkupValues } from "./types";
 import path from "path";
 import Image from "@11ty/eleventy-img";
 
-export function defaultMarkup({ src, sources, width, height, alt }: MarkupValues)
-{
-    return `
-        <picture>
-        ${sources}
-        <img
-            src="${src}"
-            width="${width}"
-            height="${height}"
-            alt="${alt}"
-            loading="lazy"
-            decoding="async">
-    </picture>`;
-}
-
 interface CreateHTMLProps
 {
     imageDir: string,
@@ -25,9 +10,9 @@ interface CreateHTMLProps
     sizes: string,
     isRemote: boolean,
     mdFilePath: string,
-    customMarkup: ((attributes: MarkupValues) => string) | null,
+    markup: ((attributes: MarkupValues) => string),
 }
-export function createHTML({ imageDir, metadata, alt, sizes, isRemote, mdFilePath, customMarkup }: CreateHTMLProps)
+export function createHTML({ imageDir, metadata, alt, sizes, isRemote, mdFilePath, markup }: CreateHTMLProps)
 {
     let baseSource: Image.MetadataEntry[];
     let highsrc: Image.MetadataEntry;
@@ -59,13 +44,20 @@ export function createHTML({ imageDir, metadata, alt, sizes, isRemote, mdFilePat
         }).join("\n");
     }
 
-    if (customMarkup)
-    {
-        return customMarkup({ src: path.join(imageDir, path.basename(highsrc.url)), width: highsrc.width, height: highsrc.height, alt: alt, format: baseSource[0].format, sources: generateSrcsets(metadata), isRemote: isRemote, mdFilePath: mdFilePath });
-    }
-    else
-    {
-        return defaultMarkup({ src: path.join(imageDir, path.basename(highsrc.url)), width: highsrc.width, height: highsrc.height, alt: alt, format: baseSource[0].format, sources: generateSrcsets(metadata), isRemote: isRemote, mdFilePath: mdFilePath });
-    }
+    return markup({ src: path.join(imageDir, path.basename(highsrc.url)), width: highsrc.width, height: highsrc.height, alt: alt, format: baseSource[0].format, sources: generateSrcsets(metadata), isRemote: isRemote, mdFilePath: mdFilePath });
 }
 
+export function defaultMarkup({ src, sources, width, height, alt }: MarkupValues)
+{
+    return `
+        <picture>
+        ${sources}
+        <img
+            src="${src}"
+            width="${width}"
+            height="${height}"
+            alt="${alt}"
+            loading="lazy"
+            decoding="async">
+    </picture>`;
+}
