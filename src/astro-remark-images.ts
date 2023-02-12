@@ -3,7 +3,7 @@ import { visit } from "unist-util-visit";
 import Image from "@11ty/eleventy-img";
 
 import { createHTML } from "./markupUtil.js";
-import { MarkupValues, RemarkImagesConfig } from "./types.js";
+import { RemarkImagesConfig } from "./types.js";
 
 /*
     ONlY do this work in prod; don't want to mess up the dev build in any way
@@ -15,6 +15,7 @@ import { MarkupValues, RemarkImagesConfig } from "./types.js";
 */
 
 // Closures are so neat.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
 const configureRemarkEleventyImages = (config: Required<RemarkImagesConfig> & { publicDir: string, outDir: string; }) =>
 {
     return function remarkEleventyImages()
