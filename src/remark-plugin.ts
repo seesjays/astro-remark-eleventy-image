@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { visit } from "unist-util-visit";
 import Image from "@11ty/eleventy-img";
 
@@ -16,7 +16,7 @@ import { RemarkImagesConfig } from "./types.js";
 
 // Closures are so neat.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
-const configureRemarkEleventyImages = (config: Required<RemarkImagesConfig> & { publicDir: string, outDir: string; }) =>
+const configureRemarkEleventyImagesPlugin = (config: Required<RemarkImagesConfig> & { publicDir: string, outDir: string; }) =>
 {
     return function remarkEleventyImages()
     {
@@ -112,7 +112,7 @@ const configureRemarkEleventyImages = (config: Required<RemarkImagesConfig> & { 
                         sizes: config.sizes,
                         isRemote: Image.Util.isRemoteUrl(node.url),
                         mdFilePath: file.path,
-                        customMarkup: config.customMarkup,
+                        markup: config.customMarkup,
                     });
 
                     if (responsiveHTML)
@@ -132,4 +132,4 @@ const configureRemarkEleventyImages = (config: Required<RemarkImagesConfig> & { 
     };
 };
 
-export { configureRemarkEleventyImages };
+export default configureRemarkEleventyImagesPlugin;
