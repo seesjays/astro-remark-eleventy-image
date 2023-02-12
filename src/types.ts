@@ -21,4 +21,12 @@ interface createHTMLProps
     mdFilePath: string;
 }
 
-export type { MarkupValues, createHTMLProps };
+type RemarkImagesConfig = {
+    sizes: string,
+    remoteImages: boolean,
+    eleventyImageConfig: Image.ImageOptions,
+    customMarkup: ((attributes: MarkupValues) => string),
+    altRequired: boolean,
+};
+
+export type { MarkupValues, createHTMLProps, RemarkImagesConfig };
