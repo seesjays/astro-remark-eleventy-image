@@ -50,6 +50,13 @@ const configureRemarkEleventyImagesPlugin = (config: Required<RemarkImagesConfig
                 */
                 if (!node.alt)
                 {
+                    if (!config.altRequired)
+                    {
+                        node.alt = "";
+                        nodesToChange.push(node);
+                        return;
+                    }
+
                     console.warn(`(astro-remark-images) Skipped image: ${node.url} in file ${path.basename(file.path)} due to missing alt text, which eleventy-image necessitates.`);
                     return;
                 }
