@@ -6,7 +6,7 @@ This drop-in Astro Integration replicates that functionality by using [Eleventy 
 
 ## Installation
 
-`npm install astro-remark-eleventy-image`
+```npx astro add astro-remark-eleventy-image```
 
 ### Migrating to v2.0
 
