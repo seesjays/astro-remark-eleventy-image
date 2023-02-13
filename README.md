@@ -23,8 +23,8 @@ import remarkEleventyImage from "astro-remark-eleventy-image";
 
 // https://astro.build/config
 export default defineConfig({
-	...
-	integrations: [remarkEleventyImage()]
+  ...
+  integrations: [remarkEleventyImage()]
 });
 ```
 
@@ -41,7 +41,7 @@ Configuration isn’t required for the plugin to function, but is available if y
 import { defineConfig } from 'astro/config';
 import remarkEleventyImage from "astro-remark-eleventy-image";
 
-export function customMarkup({ src, sources, width, height, alt }: MarkupValues)
+export function customMarkup({ src, sources, width, height, alt })
 {
   return `
   <picture>
