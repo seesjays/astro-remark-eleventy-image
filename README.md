@@ -44,33 +44,34 @@ import remarkEleventyImage from "astro-remark-eleventy-image";
 export function customMarkup({ src, sources, width, height, alt }: MarkupValues)
 {
   return `
-        <picture>
-        ${sources}
-        <img
-            src="${src}"
-            width="${width}"
-            height="${height}"
-            alt="${alt}"
-            loading="lazy"
-            decoding="async">
-    </picture>`;
+  <picture>
+  ${sources}
+  <img
+    src="${src}"
+    width="${width}"
+    height="${height}"
+    alt="${alt}"
+    loading="lazy"
+    decoding="async">
+   </picture>
+   `;
 }
 
 // https://astro.build/config
 export default defineConfig({
-	integrations: [remarkEleventyImage({
-	  sizes: "(max-width: 700px) 100vw, 700px",
-		remoteImages: false,
-		altRequired: true,
-		customMarkup: customMarkup,
-		eleventyImageConfig: {
-        formats: ['auto'],
-        widths: ['auto', 600, 1000, 1400],
-        sharpOptions: {
-          animated: true
-        }
-      },
-	})],
+  integrations: [remarkEleventyImage({
+    sizes: "(max-width: 700px) 100vw, 700px",
+    remoteImages: false,
+    altRequired: true,
+    customMarkup: customMarkup,
+    eleventyImageConfig: {
+      formats: ['auto'],
+      widths: ['auto', 600, 1000, 1400],
+      sharpOptions: {
+        animated: true
+      }
+    },
+  })],
 });
 ```
 
