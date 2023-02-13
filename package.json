@@ -8,6 +8,7 @@
   "keywords": [
     "astro",
     "astro-component",
+    "astro-integration",
     "withastro",
     "astrojs",
     "remark",
@@ -21,7 +22,8 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "src",
@@ -30,12 +32,12 @@
   "dependencies": {
     "@11ty/eleventy-img": "^3.0.0",
     "@types/11ty__eleventy-img": "^2.0.1",
-    "astro": "^2.0.0",
     "sharp": "^0.31.3",
     "unist-util-visit": "^4.1.2"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
+    "astro": "^2.0.10",
     "typescript": "^4.9.5"
   },
   "repository": {

@@ -7,13 +7,13 @@ import { RemarkImagesConfig } from "./src/types";
 
 export type { createHTMLProps, MarkupValues } from "./src/types";
 
-const remarkEleventyImages = (options?: Partial<RemarkImagesConfig> | undefined): AstroIntegration =>
+export default function remarkEleventyImages(options: Partial<RemarkImagesConfig> = {}): AstroIntegration
 {
     return {
         name: 'astro-remark-eleventy-image',
 
         hooks: {
-            'astro:config:setup': ({ command, config, updateConfig }) =>
+            'astro:config:setup': async ({ command, config, updateConfig }) =>
             {
                 if (command == 'build')
                 {
@@ -64,5 +64,3 @@ const remarkEleventyImages = (options?: Partial<RemarkImagesConfig> | undefined)
         },
     };
 };
-
-export default remarkEleventyImages;

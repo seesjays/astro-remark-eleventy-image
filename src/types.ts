@@ -1,4 +1,5 @@
 import type Image from "@11ty/eleventy-img";
+import { ImageOptions } from "@11ty/eleventy-img";
 
 type MarkupValues = {
     src: string,
@@ -24,9 +25,9 @@ interface createHTMLProps
 type RemarkImagesConfig = {
     sizes: string,
     remoteImages: boolean,
-    eleventyImageConfig: Image.ImageOptions,
+    eleventyImageConfig: ImageOptions,
     customMarkup: ((attributes: MarkupValues) => string),
     altRequired: boolean,
 };
 
-export type { MarkupValues, createHTMLProps, RemarkImagesConfig };
+export type { MarkupValues, createHTMLProps, RemarkImagesConfig, ImageOptions };
