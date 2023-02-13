@@ -1,11 +1,9 @@
-import path from "path";
+import path from "node:path";
 import { visit } from "unist-util-visit";
 import Image from "@11ty/eleventy-img";
 
-// @ts-ignore
-import config from "./astro.config.mjs";
 import { createHTML } from "./markupUtil.js";
-import { MarkupValues } from "./types.js";
+import { RemarkImagesConfig } from "./types.js";
 
 /*
     ONlY do this work in prod; don't want to mess up the dev build in any way
@@ -16,49 +14,15 @@ import { MarkupValues } from "./types.js";
     4. Automagically optimized images!
 */
 
-type RemarkImagesConfig = {
-    sizes?: string,
-    remoteImages?: boolean,
-    eleventyImageConfig?: Image.ImageOptions,
-    customMarkup?: ((attributes: MarkupValues) => string),
-};
-function remarkEleventyImage()
+// Closures are so neat.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
+const configureRemarkEleventyImagesPlugin = (config: Required<RemarkImagesConfig> & { publicDir: string, outDir: string; }) =>
 {
-    const publicDir = config.publicDir || "./public/";
-    const outDir = config.outDir || "./dist/";
-
-    const ricfg: RemarkImagesConfig = (config?.markdown?.remarkImages) ? config.markdown.remarkImages : null;
-    const ricfgContainerSizes = (ricfg?.sizes) ? ricfg.sizes : "(max-width: 700px) 100vw, 700px";
-    const ricfgRemoteEnabled = (ricfg?.remoteImages) ? ricfg.remoteImages : false;
-    const ricfgCustomMarkup = (ricfg?.customMarkup) ? ricfg.customMarkup : null;
-    const ricfgEleventyImageConfig = (ricfg?.eleventyImageConfig) ? ricfg.eleventyImageConfig : null;
-
-    // setup eleventy image config obj, overwrite with settings from astro.config.mjs
-    const baseEleventyConfig: Image.ImageOptions = Object.assign({
-        widths: ['auto', 600, 1000],
-        sharpOptions: {
-            animated: true
-        },
-        useCache: false,
-    }, ricfgEleventyImageConfig);
-
-
-    /*
-        We need to expect some settings
-        For example, `widths` needs to contain 'auto' for the plugin to work
-        since Eleventy doesn't upscale rasters.
-        Also, the user isn't allowed to change the filename or outputdir. Sorry!
-    */
-    if (baseEleventyConfig.widths && !baseEleventyConfig.widths.includes('auto') && !baseEleventyConfig.widths.includes(null))
+    return function remarkEleventyImages()
     {
-        // user overwrote sizes but doesn't have 'auto'
-        // in there for the optimized original size
-        baseEleventyConfig.widths = ['auto', ...baseEleventyConfig.widths];
-    }
+        const publicDir = config.publicDir;
+        const outDir = config.outDir;
 
-    // @ts-ignore I don't entirely know how to fix this just yet
-    if (import.meta.env.PROD)
-    {
         return (ast: any, file: any) => new Promise<void>(async (resolve) =>
         {
             /* 
@@ -76,7 +40,7 @@ function remarkEleventyImage()
                     This is to prevent any stability issues, unnecessary errors, and longer processing times.
                     I'll add a portion in the README about turning it on
                 */
-                if (!ricfgRemoteEnabled && Image.Util.isRemoteUrl(node.url))
+                if (!config.remoteImages && Image.Util.isRemoteUrl(node.url))
                 {
                     return;
                 }
@@ -86,6 +50,13 @@ function remarkEleventyImage()
                 */
                 if (!node.alt)
                 {
+                    if (!config.altRequired)
+                    {
+                        node.alt = "";
+                        nodesToChange.push(node);
+                        return;
+                    }
+
                     console.warn(`(astro-remark-images) Skipped image: ${node.url} in file ${path.basename(file.path)} due to missing alt text, which eleventy-image necessitates.`);
                     return;
                 }
@@ -101,7 +72,7 @@ function remarkEleventyImage()
                 let originalImagePath;
                 let outputImageDir;
                 let outputImageDirHTML;
-                const currentConfig: Image.ImageOptions = {};
+                const tempConfig: Image.ImageOptions = {};
 
                 try
                 {
@@ -117,8 +88,8 @@ function remarkEleventyImage()
 
                         // this is so the plugin doesn't crash when trying to optimize remote images
                         // ([Error: VipsJpeg: Maximum supported image dimension is 65500 pixels])
-                        currentConfig.formats = ['auto'];
-                        currentConfig.filenameFormat = (id, src, width, format) =>
+                        tempConfig.formats = ['auto'];
+                        tempConfig.filenameFormat = (id, src, width, format) =>
                         {
                             return `${id}-${width}.${format}`;
                         };
@@ -131,24 +102,24 @@ function remarkEleventyImage()
                         outputImageDir = path.dirname(path.join(outDir, node.url));
                         outputImageDirHTML = path.dirname(node.url);
 
-                        currentConfig.filenameFormat = (id, src, width, format) =>
+                        tempConfig.filenameFormat = (id, src, width, format) =>
                         {
                             return `${path.parse(node.url).name}-${width}.${format}`;
                         };
                     }
 
                     // the directory the image should be in
-                    currentConfig.outputDir = outputImageDir;
+                    tempConfig.outputDir = outputImageDir;
 
-                    const stats: Image.Metadata = await Image(originalImagePath, Object.assign(currentConfig, baseEleventyConfig));
+                    const stats: Image.Metadata = await Image(originalImagePath, Object.assign(tempConfig, config.eleventyImageConfig));
                     const responsiveHTML = createHTML({
                         imageDir: outputImageDirHTML,
                         metadata: stats,
                         alt: node.alt,
-                        sizes: ricfgContainerSizes,
+                        sizes: config.sizes,
                         isRemote: Image.Util.isRemoteUrl(node.url),
                         mdFilePath: file.path,
-                        customMarkup: ricfgCustomMarkup,
+                        markup: config.customMarkup,
                     });
 
                     if (responsiveHTML)
@@ -165,7 +136,7 @@ function remarkEleventyImage()
             resolve();
             return;
         });
-    }
+    };
 };
 
-export { remarkEleventyImage };
+export default configureRemarkEleventyImagesPlugin;

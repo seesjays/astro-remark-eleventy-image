@@ -1,6 +1,6 @@
 {
   "name": "astro-remark-eleventy-image",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "description": "Remark plugin for Astro that automatically optimizes images referenced in markdown files.",
   "author": "ChrisOh431",
   "license": "MIT",
@@ -8,6 +8,7 @@
   "keywords": [
     "astro",
     "astro-component",
+    "astro-integration",
     "withastro",
     "astrojs",
     "remark",
@@ -21,7 +22,8 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "src",
@@ -35,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
+    "astro": "^2.0.10",
     "typescript": "^4.9.5"
   },
   "repository": {
