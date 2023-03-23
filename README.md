@@ -8,6 +8,30 @@ This drop-in Astro Integration replicates that functionality by using [Eleventy 
 
 ```npx astro add astro-remark-eleventy-image```
 
+Astro's version of Vite causes errors with eleventy-img, so to use this package you <ins>must</ins> include this snippet in your **astro-config**
+
+```js
+vite: {
+    ssr: {
+      external: ["@11ty/eleventy-img"],
+    },
+}
+```
+
+like such:
+
+```js
+export default defineConfig({
+  integrations: [remarkEleventyImage({ ... })],
+  vite: {
+    ssr: {
+      external: ["@11ty/eleventy-img"],
+    },
+  },
+});
+```
+
+
 ### Migrating to v2.0
 
 For better UX + ease of future development, this package was converted from a Remark plugin (v1.0) to an Integration (that adds a Remark plugin behind the scenes)
