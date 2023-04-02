@@ -1,17 +1,7 @@
-import { MarkupValues } from "./types";
+import { MarkupValues, CreateHTMLProps } from "./types";
 import path from "path";
 import Image from "@11ty/eleventy-img";
 
-interface CreateHTMLProps
-{
-    imageDir: string,
-    metadata: Image.Metadata,
-    alt: string,
-    sizes: string,
-    isRemote: boolean,
-    mdFilePath: string,
-    markup: ((attributes: MarkupValues) => string),
-}
 export function createHTML({ imageDir, metadata, alt, sizes, isRemote, mdFilePath, markup }: CreateHTMLProps)
 {
     let baseSource: Image.MetadataEntry[];
