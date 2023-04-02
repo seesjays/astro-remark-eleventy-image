@@ -12,15 +12,16 @@ type MarkupValues = {
     mdFilePath: string,
 };
 
-interface createHTMLProps
+interface CreateHTMLProps
 {
     imageDir: string,
     metadata: Image.Metadata,
     alt: string,
     sizes: string,
     isRemote: boolean,
-    mdFilePath: string;
-}
+    mdFilePath: string,
+    markup: ((attributes: MarkupValues) => string),
+};
 
 type RemarkImagesConfig = {
     sizes: string,
@@ -30,4 +31,4 @@ type RemarkImagesConfig = {
     altRequired: boolean,
 };
 
-export type { MarkupValues, createHTMLProps, RemarkImagesConfig, ImageOptions };
+export type { MarkupValues, CreateHTMLProps, RemarkImagesConfig, ImageOptions };

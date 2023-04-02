@@ -2,10 +2,10 @@ import { AstroIntegration } from "astro";
 import { fileURLToPath } from "node:url";
 import configureRemarkEleventyImagesPlugin from "./src/remark-plugin";
 
-import { createHTML, defaultMarkup } from "./src/markupUtil";
+import { defaultMarkup } from "./src/markupUtil";
 import { RemarkImagesConfig } from "./src/types";
 
-export type { createHTMLProps, MarkupValues } from "./src/types";
+export type { CreateHTMLProps, MarkupValues } from "./src/types";
 
 export default function remarkEleventyImages(options: Partial<RemarkImagesConfig> = {}): AstroIntegration
 {
